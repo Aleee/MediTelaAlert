@@ -56,11 +56,9 @@ class MainWindow(QMainWindow):
         self.thread_2.start()
         time.sleep(1)
         # run updater
-        self.updater = Updater(private_connection=self.con_p)
+        self.updater = Updater(private_connection=self.con_p, sqlmodel=self.sqlmodel)
         self.updater.run()
 
-        time.sleep(1)
-        self.sqlmodel.select()
         self.ui.tv.reformat_tableview(initialization=True)
         self.set_filter()
         self.connect_chbs_to_tv(self.ui.tv)

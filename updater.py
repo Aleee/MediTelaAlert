@@ -8,10 +8,11 @@ from typing import Union
 
 class Updater(QObject):
 
-    def __init__(self, private_connection):
+    def __init__(self, private_connection, sqlmodel: QSqlTableModel):
         super(Updater, self).__init__()
         self.con_f: Union[QSqlDatabase, None] = None
         self.con_p = private_connection
+        self.sqlmodel = sqlmodel
         self.timer = QTimer()
 
     def run(self):
@@ -166,4 +167,5 @@ class Updater(QObject):
                 # дата рождения
                 query.addBindValue(data_patient[patient_id][1])
 
-            process_query(query=query)
+            if process_query(query=query):
+                self.sqlmodel.select()
