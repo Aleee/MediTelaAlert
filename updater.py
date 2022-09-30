@@ -3,30 +3,26 @@ from PyQt5.QtCore import *
 from sqlwrapper import process_query
 from consts import SQL_INSERTDATA, SQL_UPDATEDATA
 import random
-import time
 from typing import Union
 
 
 class Updater(QObject):
 
-    def __init__(self):
+    def __init__(self, private_connection):
         super(Updater, self).__init__()
         self.con_f: Union[QSqlDatabase, None] = None
-        self.con_p: Union[QSqlDatabase, None] = None
+        self.con_p = private_connection
+        self.timer = QTimer()
 
-    def update(self):
+    def run(self):
         self.con_f = QSqlDatabase.addDatabase("QSQLITE",
-                                              connectionName="foreign_updatethread")
+                                              connectionName="foreign_updater")
         self.con_f.setDatabaseName("fakedb.db")
         self.con_f.open()
-        self.con_p = QSqlDatabase.addDatabase("QSQLITE",
-                                              connectionName="private_updatethread")
-        self.con_p.setDatabaseName("db.db")
-        self.con_p.open()
 
-        while not self.thread().isInterruptionRequested():
-            if self.update_privatedb():
-                time.sleep(30)
+        self.update_privatedb()
+        self.timer.timeout.connect(self.update_privatedb)
+        self.timer.start(20000)
 
     def update_privatedb(self):
         # Get values from foreign DB

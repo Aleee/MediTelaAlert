@@ -56,11 +56,8 @@ class MainWindow(QMainWindow):
         self.thread_2.start()
         time.sleep(1)
         # run updater
-        self.updater = Updater()
-        self.thread_1 = QThread()
-        self.updater.moveToThread(self.thread_1)
-        self.thread_1.started.connect(self.updater.update)
-        self.thread_1.start()
+        self.updater = Updater(private_connection=self.con_p)
+        self.updater.run()
 
         time.sleep(1)
         self.sqlmodel.select()
