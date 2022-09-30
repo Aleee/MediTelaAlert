@@ -1,5 +1,6 @@
 from PyQt5.QtSql import *
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 from sqlwrapper import process_query
 from consts import SQL_INSERTDATA, SQL_UPDATEDATA
 import random
@@ -36,7 +37,14 @@ class Updater(QObject):
                 self.time_since_last_upd = 0
                 self.update_privatedb()
 
-    def update_privatedb(self):
+    def force_update(self, button: QPushButton):
+        button.setEnabled(False)
+        if self.update_privatedb():
+            self.time_since_last_upd = 0
+            self.timer.start(30000)
+        button.setEnabled(True)
+
+    def update_privatedb(self) -> bool:
         # Get values from foreign DB
 
         data_emergdept = {}
@@ -178,5 +186,8 @@ class Updater(QObject):
                 # дата рождения
                 query.addBindValue(data_patient[patient_id][1])
 
-            if process_query(query=query):
-                self.sqlmodel.select()
+            if not process_query(query=query):
+                return False
+
+        self.sqlmodel.select()
+        return True

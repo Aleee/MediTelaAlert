@@ -70,6 +70,8 @@ class MainWindow(QMainWindow):
         self.con_p.open()
 
     def set_connections(self):
+        self.ui.pb_reload.clicked.connect(
+            lambda: self.updater.force_update(self.ui.pb_reload))
         for chb in self.ui.gb_filter.findChildren(QCheckBox):
             chb.stateChanged.connect(self.set_filter)
 
