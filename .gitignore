@@ -1,6 +1,6 @@
-!/filename.log
 /venv/
 /__pycache__/
 /.idea/
-!/fakedb.db
-!/db.db
+fakedb.db
+db.db
+filename.log
