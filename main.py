@@ -47,14 +47,14 @@ class MainWindow(QMainWindow):
         self.ui.tv.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.tv.horizontalHeader().setMinimumSectionSize(5)
 
-        time.sleep(1)
+        time.sleep(0.5)
         # run emulator
         self.emulator = Emulator()
         self.thread_2 = QThread()
         self.emulator.moveToThread(self.thread_2)
         self.thread_2.started.connect(self.emulator.emulate)
         self.thread_2.start()
-        time.sleep(1)
+        time.sleep(0.5)
         # run updater
         self.updater = Updater(private_connection=self.con_p, sqlmodel=self.sqlmodel)
         self.updater.run()
