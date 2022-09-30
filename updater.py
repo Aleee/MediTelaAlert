@@ -4,6 +4,7 @@ from sqlwrapper import process_query
 from consts import SQL_INSERTDATA, SQL_UPDATEDATA
 import random
 from typing import Union
+from methods import str_to_int
 
 
 class Updater(QObject):
@@ -14,6 +15,8 @@ class Updater(QObject):
         self.con_p = private_connection
         self.sqlmodel = sqlmodel
         self.timer = QTimer()
+        self.time_since_last_upd = 0
+        self.settings = QSettings("settings.ini", QSettings.IniFormat)
 
     def run(self):
         self.con_f = QSqlDatabase.addDatabase("QSQLITE",
@@ -22,8 +25,16 @@ class Updater(QObject):
         self.con_f.open()
 
         self.update_privatedb()
-        self.timer.timeout.connect(self.update_privatedb)
-        self.timer.start(20000)
+        self.timer.timeout.connect(self.check_update_needed)
+        self.timer.start(30000)
+
+    def check_update_needed(self):
+        self.time_since_last_upd += 30000
+        autorefresh_threshold = str_to_int(self.settings.value("autorefresh"))
+        if autorefresh_threshold:
+            if self.time_since_last_upd >= autorefresh_threshold:
+                self.time_since_last_upd = 0
+                self.update_privatedb()
 
     def update_privatedb(self):
         # Get values from foreign DB
