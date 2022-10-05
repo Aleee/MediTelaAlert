@@ -148,9 +148,9 @@
           </widget>
          </item>
          <item row="5" column="0">
-          <widget class="QCheckBox" name="cb_crd">
+          <widget class="BuddyCheckBox" name="chb_crd">
            <property name="text">
-            <string>Кариомаркеры</string>
+            <string>Кардиомаркеры</string>
            </property>
           </widget>
          </item>
@@ -493,7 +493,7 @@
         </spacer>
        </item>
        <item row="0" column="4">
-        <widget class="QGroupBox" name="gb_notifytype">
+        <widget class="GroupBoxWithRadiobuttons" name="gb_notifytype">
          <property name="title">
           <string>Сообщение при изменении статуса</string>
          </property>
@@ -503,12 +503,24 @@
             <property name="text">
              <string>Отключить</string>
             </property>
+            <property name="property" stdset="0">
+             <string>verbosity</string>
+            </property>
+            <property name="value" stdset="0">
+             <number>0</number>
+            </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QRadioButton" name="rb_notifytype_log">
             <property name="text">
              <string>Запись в лог</string>
+            </property>
+            <property name="property" stdset="0">
+             <string>verbosity</string>
+            </property>
+            <property name="value" stdset="0">
+             <number>1</number>
             </property>
            </widget>
           </item>
@@ -520,12 +532,24 @@
             <property name="checked">
              <bool>true</bool>
             </property>
+            <property name="property" stdset="0">
+             <string>verbosity</string>
+            </property>
+            <property name="value" stdset="0">
+             <number>2</number>
+            </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QRadioButton" name="rb_notifytype_popup">
             <property name="text">
              <string>Всплывающее окно</string>
+            </property>
+            <property name="property" stdset="0">
+             <string>verbosity</string>
+            </property>
+            <property name="value" stdset="0">
+             <number>3</number>
             </property>
            </widget>
           </item>

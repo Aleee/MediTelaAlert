@@ -1,9 +1,29 @@
 DATETIME_F = "%Y-%m-%d %H:%M:%S"
+DATETIME_F_SHORT = "%H:%M:%S"
+
+LOG_MSG = "({0}) <span style='color: red; font-weight: bold'>{1}</span> пациента <span style='font-weight: bold'>{2}</span>: статус изменен на ВЫПОЛНЕНО (время изменения: {3})"
+WIN_MSG = "{0} пациента {1} готов!"
 
 SYMBOLS = {
     "in_progress": "⬤",
     "done": "✔",
     "cancelled": "✖",
+}
+
+LABTESTS = {
+    1: "Общий анализ крови",
+    2: "Биохимический анализ крови",
+    3: "Тропонин I hs",
+    4: "Кардиомаркеры",
+    5: "D-димер",
+    6: "Глюкоза (перифер.)",
+    7: "Общий анализ мочи",
+    8: "Амилаза мочи",
+    9: "КЩС",
+    10: "ProBNP",
+    11: "Пресепсин",
+    12: "Антиген SARS-CoV-2",
+    13: "Антитела SARS-CoV-2",
 }
 
 SQL_UPDATEDATA = "UPDATE patientinfo SET " \
@@ -14,9 +34,12 @@ SQL_UPDATEDATA = "UPDATE patientinfo SET " \
                  "bak_status = ?," \
                  "bak_time = ?," \
                  "bak_follow = ?," \
-                 "trp_status = ?," \
-                 "trp_time = ?," \
-                 "trp_follow = ?," \
+                 "tni_status = ?," \
+                 "tni_time = ?," \
+                 "tni_follow = ?," \
+                 "crd_status = ?," \
+                 "crd_time = ?," \
+                 "crd_follow = ?," \
                  "ddm_status = ?," \
                  "ddm_time = ?," \
                  "ddm_follow = ?," \
@@ -55,25 +78,7 @@ SQL_UPDATEDATA = "UPDATE patientinfo SET " \
                  "usd_follow = ?," \
                  "end_status = ?," \
                  "end_time = ?," \
-                 "end_follow = ?," \
-                 "neur_status = ?," \
-                 "neur_time = ?," \
-                 "neur_follow = ?," \
-                 "card_status = ?," \
-                 "card_time = ?," \
-                 "card_follow = ?," \
-                 "rean_status = ?," \
-                 "rean_time = ?," \
-                 "rean_follow = ?," \
-                 "surg_status = ?," \
-                 "surg_time = ?," \
-                 "surg_follow = ?," \
-                 "urol_status = ?," \
-                 "urol_time = ?," \
-                 "urol_follow = ?," \
-                 "proc_status = ?," \
-                 "proc_time = ?," \
-                 "proc_follow = ? " \
+                 "end_follow = ? " \
                  "WHERE patient_id = ?"
 
 SQL_INSERTDATA = "INSERT INTO patientinfo VALUES (" \
@@ -81,97 +86,90 @@ SQL_INSERTDATA = "INSERT INTO patientinfo VALUES (" \
                  "?," \
                  "?," \
                  "?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?, ?, ?," \
-                 "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," \
-                 "?)"
+                 "?," \
+                 "?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?, " \
+                 "?,?,?)"
+
+REF_COLUMNS = {
+    "lab_start": "oak_status",
+    "instr_start": "xra_status",
+    "instr_end": "end_follow",
+}
 
 TV_HEADERS = {
     0: ("", 0, 0, "patient_id"),
     1: ("ФИО пациента", 210, 1, "name"),
     2: ("", 20, 1, "room"),
-    3: ("Время", 115, 1, "time"),
-    4: ("ОАК", 40, 2, "oak_status"),
-    5: ("", 0, 0, "oak_time"),
-    6: ("", 0, 0, "oak_follow"),
-    7: ("БАК", 40, 2, "bak_status"),
-    8: ("", 0, 0, "bak_time"),
-    9: ("", 0, 0, "bak_follow"),
-    10: ("ТnI", 40, 2, "trp_status"),
-    11: ("", 0, 0, "trp_time"),
-    12: ("", 0, 0, "trp_follow"),
-    13: ("Ддм", 40, 2, "ddm_status"),
-    14: ("", 0, 0, "ddm_time"),
-    15: ("", 0, 0, "ddm_follow"),
-    16: ("Glu", 40, 2, "glu_status"),
-    17: ("", 0, 0, "glu_time"),
-    18: ("", 0, 0, "glu_follow"),
-    19: ("ОАМ", 40, 2, "oam_status"),
-    20: ("", 0, 0, "oam_time"),
-    21: ("", 0, 0, "oam_follow"),
-    22: ("Диа", 40, 2, "dia_status"),
-    23: ("", 0, 0, "dia_time"),
-    24: ("", 0, 0, "dia_follow"),
-    25: ("КЩС", 40, 2, "acb_status"),
-    26: ("", 0, 0, "acb_time"),
-    27: ("", 0, 0, "acb_follow"),
-    28: ("BNP", 40, 2, "bnp_status"),
-    29: ("", 0, 0, "bnp_time"),
-    30: ("", 0, 0, "bnp_follow"),
-    31: ("Псп", 40, 2, "psp_status"),
-    32: ("", 0, 0, "psp_time"),
-    33: ("", 0, 0, "psp_follow"),
-    34: ("Ag", 40, 2, "agc_status"),
-    35: ("", 0, 0, "agc_time"),
-    36: ("", 0, 0, "agc_follow"),
-    37: ("Ab", 40, 2, "abc_status"),
-    38: ("", 0, 0, "abc_time"),
-    39: ("", 5, 1, "abc_follow"),  # also a separator
-    40: ("Rгр", 40, 2, "xra_status"),
-    41: ("", 0, 0, "xra_follow"),
-    42: ("", 0, 0, "xra_time"),
-    43: ("КТ", 40, 2, "cts_status"),
-    44: ("", 0, 0, "cts_time"),
-    45: ("", 0, 0, "cts_follow"),
-    46: ("УЗИ", 40, 2, "usd_status"),
-    47: ("", 0, 0, "usd_time"),
-    48: ("", 0, 0, "usd_follow"),
-    49: ("ФГДС", 50, 2, "end_status"),
-    50: ("", 0, 0, "end_time"),
-    51: ("", 0, 0, "end_follow"),
-    52: ("невр", 50, 2, "neur_status"),
-    53: ("", 0, 0, "neur_time"),
-    54: ("", 0, 0, "neur_follow"),
-    55: ("кард", 50, 2, "card_status"),
-    56: ("", 0, 0, "card_time"),
-    57: ("", 0, 0, "card_follow"),
-    58: ("реан", 50, 2, "rean_status"),
-    59: ("", 0, 0, "rean_time"),
-    60: ("", 0, 0, "rean_follow"),
-    61: ("хир", 50, 2, "surg_status"),
-    62: ("", 0, 0, "surg_time"),
-    63: ("", 0, 0, "surg_follow"),
-    64: ("урол", 50, 2, "urol_status"),
-    65: ("", 0, 0, "urol_time"),
-    66: ("", 0, 0, "urol_follow"),
-    67: ("прок", 50, 2, "proc_status"),
-    68: ("", 0, 0, "proc_time"),
-    69: ("", 0, 0, "proc_follow"),
-    70: ("", 0, 0, "birthdate"),  # дата рождения
+    3: ("", 0, 0, "time_numeric"),
+    4: ("Время", 115, 1, "time_text"),
+    5: ("", 0, 0, "birthdate"),
+    6: ("ОАК", 40, 2, "oak_status"),
+    7: ("", 0, 0, "oak_time"),
+    8: ("", 0, 0, "oak_follow"),
+    9: ("БАК", 40, 2, "bak_status"),
+    10: ("", 0, 0, "bak_time"),
+    11: ("", 0, 0, "bak_follow"),
+    12: ("ТnI", 40, 2, "tni_status"),
+    13: ("", 0, 0, "tni_time"),
+    14: ("", 0, 0, "tni_follow"),
+    15: ("Крд", 40, 2, "crd_status"),
+    16: ("", 0, 0, "crd_time"),
+    17: ("", 0, 0, "crd_follow"),
+    18: ("Ддм", 40, 2, "ddm_status"),
+    19: ("", 0, 0, "ddm_time"),
+    20: ("", 0, 0, "ddm_follow"),
+    21: ("Glu", 40, 2, "glu_status"),
+    22: ("", 0, 0, "glu_time"),
+    23: ("", 0, 0, "glu_follow"),
+    24: ("ОАМ", 40, 2, "oam_status"),
+    25: ("", 0, 0, "oam_time"),
+    26: ("", 0, 0, "oam_follow"),
+    27: ("Диа", 40, 2, "dia_status"),
+    28: ("", 0, 0, "dia_time"),
+    29: ("", 0, 0, "dia_follow"),
+    30: ("КЩС", 40, 2, "acb_status"),
+    31: ("", 0, 0, "acb_time"),
+    32: ("", 0, 0, "acb_follow"),
+    33: ("BNP", 40, 2, "bnp_status"),
+    34: ("", 0, 0, "bnp_time"),
+    35: ("", 0, 0, "bnp_follow"),
+    36: ("Псп", 40, 2, "psp_status"),
+    37: ("", 0, 0, "psp_time"),
+    38: ("", 0, 0, "psp_follow"),
+    39: ("Ag", 40, 2, "agc_status"),
+    40: ("", 0, 0, "agc_time"),
+    41: ("", 0, 0, "agc_follow"),
+    42: ("Ab", 40, 2, "abc_status"),
+    43: ("", 0, 0, "abc_time"),
+    44: ("", 5, 1, "abc_follow"),  # also a separator
+    45: ("Rгр", 40, 2, "xra_status"),
+    46: ("", 0, 0, "xra_follow"),
+    47: ("", 0, 0, "xra_time"),
+    48: ("КТ", 40, 2, "cts_status"),
+    49: ("", 0, 0, "cts_time"),
+    50: ("", 0, 0, "cts_follow"),
+    51: ("УЗИ", 40, 2, "usd_status"),
+    52: ("", 0, 0, "usd_time"),
+    53: ("", 0, 0, "usd_follow"),
+    54: ("ФГДС", 50, 2, "end_status"),
+    55: ("", 0, 0, "end_time"),
+    56: ("", 0, 0, "end_follow"),
 }
 
 NAMES = [

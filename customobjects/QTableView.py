@@ -4,17 +4,41 @@ from PyQt5.QtCore import *
 from typing import Union
 from consts import TV_HEADERS
 from customobjects.QCheckBox import BuddyCheckBox
+from methods import get_column_number_from_name
+from sqlwrapper import PrivateDbConsts
 
 
 class CustomTableView(QTableView):
     def __init__(self, parentwdg: QWidget = None):
         super(CustomTableView, self).__init__(parentwdg)
         self.sidewidget: Union[QWidget, None] = None
+        self.db_consts: Union[PrivateDbConsts, None] = None
+
+        self.selection = None
 
     def connect_sidewidget(self, sidewidget: QWidget):
         self.sidewidget = sidewidget
         self.sidewidget_set_visible(False)
         self.selectionModel().selectionChanged.connect(self.handle_selection)
+
+    def set_private_connections(self):
+        self.model().modelAboutToBeReset.connect(self.save_selection)
+        self.model().modelReset.connect(self.restore_selection)
+
+    def save_selection(self):
+        self.selection = self.selectionModel().selectedIndexes()
+
+    def restore_selection(self):
+        try:
+            selection_index = self.selection[0]
+            self.selectionModel().select(selection_index, QItemSelectionModel.ClearAndSelect)
+            self.selectRow(selection_index.row())
+            self.handle_selection(QItemSelection(selection_index, selection_index), QItemSelection())
+        except IndexError:
+            pass
+
+    def pass_db_consts(self, db_consts_container: PrivateDbConsts):
+        self.db_consts = db_consts_container
 
     def sqlcolumnname_by_index(self, index) -> str:
         return self.model().headerData(index.column(), Qt.Horizontal, Qt.UserRole)
@@ -67,14 +91,15 @@ class CustomTableView(QTableView):
         if selection.indexes():
             # Смена имени и даты рождения
             self.sidewidget.findChild(QLabel, name="la_name").setText(
-                self.data_from_selection_sibling(selection, 1))
+                self.data_from_selection_sibling(selection, get_column_number_from_name("name")))
             self.sidewidget.findChild(QLabel, name="la_birthdate").setText(
-                self.data_from_selection_sibling(selection, 70))
+                self.data_from_selection_sibling(selection, get_column_number_from_name("birthdate")))
             # Установка чекбоксов
-            for column in range(22):
-                follow = self.data_from_selection_sibling(selection, 6 + column * 3)
-                col_name: str = self.model().headerData(6 + column * 3, Qt.Horizontal,
+            for column in range(0, (self.db_consts.lab_cols_number + self.db_consts.instr_cols_number) // 3):
+                follow = self.data_from_selection_sibling(selection, self.db_consts.init_cols_number + column * 3 + 2)
+                col_name: str = self.model().headerData(self.db_consts.init_cols_number + column * 3, Qt.Horizontal,
                                                         Qt.UserRole)
                 chb_name = "chb_" + col_name.split("_", 1)[0]
-                self.sidewidget.findChild(BuddyCheckBox, name=chb_name).setChecked(
-                    bool(follow))
+                chb_widget = self.sidewidget.findChild(BuddyCheckBox, name=chb_name)
+                chb_widget.setChecked(bool(follow))
+                chb_widget.change_color(chb_widget.checkState())

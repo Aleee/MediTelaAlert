@@ -30,7 +30,6 @@ class BuddyCheckBox(QCheckBox):
         query.addBindValue(follow_column_value)
         query.addBindValue(tv_current_patientid)
         if process_query(query):
-            print(follow_column_name, follow_column_value, tv_current_patientid)
             self.tv.model().selectRow(tv_current_row)
             self.tv.reformat_tableview(False)
 
@@ -43,7 +42,6 @@ class BuddyCheckBox(QCheckBox):
             status_value: Union[str, int, None] = self.tv.model().data(
                 selection_index.siblingAtColumn(column_num),
                 Qt.UserRole)
-            print(column_num, status_value)
             if not status_value:
                 self.setStyleSheet(
                     "background-color: rgba(215, 215, 255, 0.5);")  # blueish

@@ -1,6 +1,3 @@
-# from plyer import notification as n
-# n.notify(title='title', message='m', timeout=120)
-
 import sys
 import time
 
@@ -10,12 +7,13 @@ from PyQt5.QtSql import *
 from mainwindowUI import Ui_MainWindow
 from emulator import Emulator
 from updater import Updater
-from sqlwrapper import clear_db_table
+from sqlwrapper import PrivateDbConsts, clear_db_table
 from customobjects.QSqlTableModel import CustomSqlTableModel
 from customobjects.QGroupBox import GroupBoxWithRadiobuttons
 from customobjects.QCheckBox import BuddyCheckBox
 import lovely_logger as log
 from typing import Union
+from notifier import Notifier
 
 
 class MainWindow(QMainWindow):
@@ -24,6 +22,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self.settings = QSettings()
+        self.db_consts: [PrivateDbConsts, None] = None
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -43,9 +42,12 @@ class MainWindow(QMainWindow):
         self.sqlmodel: Union[CustomSqlTableModel, None] = None
         self.ui.tv.setModel(self.create_model())
         self.ui.tv.connect_sidewidget(self.ui.sidewdg)
+        self.ui.tv.set_private_connections()
         self.ui.tv.setSelectionMode(QAbstractItemView.SingleSelection)
         self.ui.tv.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.ui.tv.horizontalHeader().setMinimumSectionSize(5)
+        self.ui.tv.pass_db_consts(self.db_consts)
+        self.notifier = Notifier(log_wdg=self.ui.te_log)
 
         time.sleep(0.5)
         # run emulator
@@ -56,7 +58,10 @@ class MainWindow(QMainWindow):
         self.thread_2.start()
         time.sleep(0.5)
         # run updater
-        self.updater = Updater(private_connection=self.con_p, sqlmodel=self.sqlmodel)
+        self.updater = Updater(private_connection=self.con_p,
+                               private_db_consts=self.db_consts,
+                               sqlmodel=self.sqlmodel,
+                               notifier=self.notifier)
         self.updater.run()
 
         self.ui.tv.reformat_tableview(initialization=True)
@@ -68,6 +73,7 @@ class MainWindow(QMainWindow):
                                               connectionName="private_mainthread")
         self.con_p.setDatabaseName("db.db")
         self.con_p.open()
+        self.db_consts = PrivateDbConsts()
 
     def set_connections(self):
         self.ui.pb_reload.clicked.connect(
@@ -86,11 +92,10 @@ class MainWindow(QMainWindow):
                 selected_rooms += ("\'" + chb.objectName().split('_')[2] + "\',")
         filtered = (selected_rooms[:-1] if selected_rooms[-1] == ","
                     else selected_rooms) + ")"
-        print(filtered)
         self.ui.tv.model().setFilter(filtered)
 
     def create_model(self) -> CustomSqlTableModel:
-        self.sqlmodel = CustomSqlTableModel(db=self.con_p)
+        self.sqlmodel = CustomSqlTableModel(db=self.con_p, db_consts=self.db_consts)
         self.sqlmodel.setTable("patientinfo")
         self.sqlmodel.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.sqlmodel.select()

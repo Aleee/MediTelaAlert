@@ -63,7 +63,7 @@ class Emulator(QObject):
             query.addBindValue(random.choice(["7", "9", "T", "X"]))
             process_query(query)
             # Лабораторные исследования
-            for lab_test_type in random.sample(range(1, 8), random.randint(0, 3)):
+            for lab_test_type in random.sample(range(1, 8), random.randint(1, 5)):
                 query.prepare("INSERT INTO labtest "
                               "(patient_id, datetime, test_type, status) "
                               "VALUES (?, ?, ?, ?)")
@@ -71,7 +71,7 @@ class Emulator(QObject):
                 delta = timedelta(minutes=random.randint(2, 24))
                 query.addBindValue((admission_time + delta).strftime(DATETIME_F))
                 query.addBindValue(lab_test_type)
-                query.addBindValue(random.choice([1, 1, 1, 2, 2, 2, 4, 5, 5, 5]))
+                query.addBindValue(random.choice([1, 1, 2, 2, 4, 4, 4, 4, 4, 5]))
                 process_query(query)
             # Инструментальные исследования
             for instr_test_type in random.sample(range(1, 4), random.randint(0, 2)):
@@ -87,7 +87,7 @@ class Emulator(QObject):
 
     def emulate_changes(self):
         while not self.thread().isInterruptionRequested():
-            time.sleep(10)
+            time.sleep(9)
             query = QSqlQuery(self.con_f)
             # labtests
             query.prepare("UPDATE labtest SET status = status + 1, datetime = ? "
